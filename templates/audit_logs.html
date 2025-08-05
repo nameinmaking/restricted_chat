@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - Ecommerce Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            text-align: center;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .filters h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .logs-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .logs-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .logs-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .pagination-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .logs-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .logs-table td {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: top;
+        }
+
+        .logs-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .user-email {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .user-role {
+            background: #e9ecef;
+            color: #495057;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .action-badge {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .resource-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .resource-type {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .resource-id {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .pagination button:hover {
+            background: #e9ecef;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .no-logs {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .logs-table {
+                font-size: 12px;
+            }
+            
+            .logs-table th,
+            .logs-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Audit Logs</h1>
+            <p>Track and monitor user activities across your ecommerce platform</p>
+        </div>
+
+        <div class="filters">
+            <h3>Filters</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="user-filter">User</label>
+                    <select id="user-filter">
+                        <option value="">All Users</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="action-filter">Action</label>
+                    <input type="text" id="action-filter" placeholder="Filter by action...">
+                </div>
+                <div class="filter-group">
+                    <label for="resource-filter">Resource Type</label>
+                    <select id="resource-filter">
+                        <option value="">All Resources</option>
+                        <option value="user">User</option>
+                        <option value="product">Product</option>
+                        <option value="order">Order</option>
+                        <option value="inventory">Inventory</option>
+                        <option value="category">Category</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="start-date">Start Date</label>
+                    <input type="date" id="start-date">
+                </div>
+                <div class="filter-group">
+                    <label for="end-date">End Date</label>
+                    <input type="date" id="end-date">
+                </div>
+            </div>
+            <button class="btn" onclick="loadLogs()">Apply Filters</button>
+            <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+        </div>
+
+        <div class="logs-container">
+            <div class="logs-header">
+                <h3>Activity Log</h3>
+                <div class="pagination-info" id="pagination-info"></div>
+            </div>
+            <div id="logs-content">
+                <div class="loading">Loading audit logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalLogs = 0;
+
+        // Load logs when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLogs();
+        });
+
+        function loadLogs(page = 1) {
+            currentPage = page;
+            
+            // Show loading
+            document.getElementById('logs-content').innerHTML = '<div class="loading">Loading audit logs...</div>';
+            
+            // Build query parameters
+            const params = new URLSearchParams({
+                page: page,
+                per_page: 20
+            });
+            
+            const userFilter = document.getElementById('user-filter').value;
+            const actionFilter = document.getElementById('action-filter').value;
+            const resourceFilter = document.getElementById('resource-filter').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            if (userFilter) params.append('user_id', userFilter);
+            if (actionFilter) params.append('action', actionFilter);
+            if (resourceFilter) params.append('resource_type', resourceFilter);
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+            
+            // Make API request
+            fetch(`/api/audit-logs?${params.toString()}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load audit logs');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayLogs(data);
+                })
+                .catch(error => {
+                    document.getElementById('logs-content').innerHTML = 
+                        `<div class="error">Error loading audit logs: ${error.message}</div>`;
+                });
+        }
+
+        function displayLogs(data) {
+            const logs = data.audit_logs;
+            const pagination = data.pagination;
+            
+            currentPage = pagination.page;
+            totalPages = pagination.pages;
+            totalLogs = pagination.total;
+            
+            // Update pagination info
+            document.getElementById('pagination-info').textContent = 
+                `Showing ${logs.length} of ${totalLogs} logs (Page ${currentPage} of ${totalPages})`;
+            
+            if (logs.length === 0) {
+                document.getElementById('logs-content').innerHTML = 
+                    '<div class="no-logs">No audit logs found matching your criteria.</div>';
+                return;
+            }
+            
+            // Build table
+            let tableHTML = `
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Resource</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            logs.forEach(log => {
+                tableHTML += `
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-name">${log.user.first_name} ${log.user.last_name}</div>
+                                <div class="user-email">${log.user.email}</div>
+                                <div class="user-role">${log.user.role}</div>
+                            </div>
+                        </td>
+                        <td><span class="action-badge">${log.action}</span></td>
+                        <td>
+                            <div class="resource-info">
+                                <div class="resource-type">${log.resource_type}</div>
+                                ${log.resource_id ? `<div class="resource-id">ID: ${log.resource_id}</div>` : ''}
+                            </div>
+                        </td>
+                        <td>${log.details || '-'}</td>
+                        <td>${log.ip_address || '-'}</td>
+                        <td class="timestamp">${new Date(log.created_at).toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            // Add pagination
+            if (totalPages > 1) {
+                tableHTML += createPaginationHTML();
+            }
+            
+            document.getElementById('logs-content').innerHTML = tableHTML;
+        }
+
+        function createPaginationHTML() {
+            let paginationHTML = '<div class="pagination">';
+            
+            // Previous button
+            paginationHTML += `
+                <button onclick="loadLogs(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    Previous
+                </button>
+            `;
+            
+            // Page numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button onclick="loadLogs(${i})" class="${i === currentPage ? 'current-page' : ''}">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            // Next button
+            paginationHTML += `
+                <button onclick="loadLogs(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    Next
+                </button>
+            `;
+            
+            paginationHTML += '</div>';
+            return paginationHTML;
+        }
+
+        function clearFilters() {
+            document.getElementById('user-filter').value = '';
+            document.getElementById('action-filter').value = '';
+            document.getElementById('resource-filter').value = '';
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            loadLogs(1);
+        }
+    </script>
+</body>
+</html> 
